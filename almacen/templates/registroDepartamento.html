@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro de Departamento{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-sm-12 col-md-6 col-lg-4 py-4 col-xl-4">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-dismissible alert-success">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong class="text-dark">{{ message }}</strong>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <h2>Registro de Departamento</h2>
+        <div class="card border border-dark">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="idDepartamento">ID Departamento:</label>
+                        <br>
+                        {{ form.idDepartamento }}
+                    </div>
+                    <div class="form-group">
+                        <br>
+                        <label for="nombre">Nombre:</label>
+                        {{ form.nombre }}
+
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-md-6 col-lg-8 py-4 col-xl-8">
+        <h1>Listado de Departamento</h1>
+        <div class="table-responsive py-2">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID Departamento</th>
+                        <th>Nombre</th>
+                        <th colspan="2">Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for x in departamentos %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{x.idDepartamento}}</td>
+                        <td>{{x.nombre}}</td>
+                        <td><a href="/edicionDepartamento/{{x.idDepartamento}}" class="btn btn-outline-primary"><img
+                                    src="/static/img/editar.svg"></a></td>
+                        <td><a href=" /eliminarDepartamento/{{x.idDepartamento}}" class="btn btn-outline-danger">
+                                <img src="/static/img/borrar.svg">
+                            </a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

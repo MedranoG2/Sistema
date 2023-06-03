@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro de Pedidos{% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-sm-12 col-md-6 col-lg-4 py-4 col-xl-4">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-dismissible alert-success">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong class="text-dark">{{ message }}</strong>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <h2>Registro de Pedidos</h2>
+        <div class="card border border-dark">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="nombreProductoB">Nombre del Producto:</label>
+                        <br>
+                        {{ form.nombreProductoB }}
+                    </div>
+                    <div class="form-group">
+                        <br>
+                        <label for="idEmpleado">ID Empleado:</label>
+                        <br>
+                        {{ form.idEmpleado }}
+                    </div>
+                    <div class="form-group">
+                        <br>
+                        <label for="Fksku">FK Sku:</label>
+                        <br>
+                        {{ form.Fksku }}
+                    </div>
+                    <div class="form-group">
+                        <br>
+                        <label for="fechaPedido">Fecha de Pedido:</label>
+                        <br>
+                        {{ form.fechaPedido }}
+                    </div>
+                    <div class="form-group">
+                        <br>
+                        <label for="cantidad">Cantidad:</label>
+                        <br>
+                        {{ form.cantidad }}
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-md-6 col-lg-8 py-4 col-xl-8">
+        <h1>Listado de Pedidos</h1>
+        <div class="table-responsive py-2">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID Pedido</th>
+                        <th>Nombre del Empleado</th>
+                        <th>Nombre del Producto</th>
+                        <th>FK Sku</th>
+                        <th>Fecha de Pedido</th>
+                        <th>Cantidad</th>
+                        <th colspan="2">Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for x in pedidos %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{x.idPedido}}</td>
+                        <td>{{x.idEmpleado}}</td>
+                        <td>{{x.Fksku.nombre}}</td>
+                        <td>{{x.Fksku.sku}}</td>
+                        <td>{{x.fechaPedido}}</td>
+                        <td>{{x.cantidad}}</td>
+                        <td><a href="/edicionPedido/{{x.idPedido}}" class="btn btn-outline-primary"><img
+                                    src="/static/img/editar.svg"></a></td>
+                        <td><a href=" /eliminarPedido/{{x.idPedido}}" class="btn btn-outline-danger">
+                                <img src="/static/img/borrar.svg">
+                            </a></td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

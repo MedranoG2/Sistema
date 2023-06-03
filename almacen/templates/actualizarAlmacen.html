@@ -1,0 +1,45 @@
+{% extends "./base.html" %}
+
+{% block title %} Gestion del Sistema {% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <h2>Edición de Almacen</h2>
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="{% url 'actualizar_almacen' almacenes.idAlmacen %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="{{ form.Fksku.id_for_label }}">Nombre del Producto:</label>
+                        {{ form.Fksku }}
+                        <br>
+                        <script>
+                            document.getElementById("{{ form.Fksku.id_for_label }}").disabled = true;
+                        </script>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="id_nombreProducto">Nombre del Producto:</label>
+                            <input type="text" id="id_nombreProducto" class="form-control"
+                                value="{{ form.instance.Fksku.sku }}" readonly>
+                            <br>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.cantidad.id_for_label }}">Cantidad:</label>
+                            <br>
+                            {{ form.cantidad }}
+                            <br>
+                        </div>
+                        <br>
+
+                        <button type="submit">Actualizar</button>
+                </form>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

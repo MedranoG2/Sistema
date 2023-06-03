@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro de Pedidos{% endblock %}
+
+{% block body %}
+<div class="col-sm-12 col-md-6 col-lg-8 py-4 col-xl-8">
+    <h1>Listado de Pedidos</h1>
+    <form action="/generar_reporte" method="post">
+        <div class="card border border-dark">
+            <div class="card-body">
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="fecha_inicio">Fecha de inicio:</label>
+                            <input type="date" id="fecha_inicio" name="fecha_inicio" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="fecha_fin">Fecha de fin:</label>
+                            <input type="date" id="fecha_fin" name="fecha_fin" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <br>
+                    <label for="nombre_producto">Nombre del producto:</label>
+                    <input type="text" id="nombre_producto" name="nombre_producto">
+                </div>
+                <div class="form-group">
+                    <br>
+                    <label for="fksku">FK Sku:</label>
+                    <input type="text" id="fksku" name="fksku">
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-outline-success">Generar Reporte</button>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/reportePedido" class="btn btn-outline-success">Actualizar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+
+
+
+<div class="table-responsive py-2">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>ID Pedido</th>
+                <th>Nombre del Empleado</th>
+                <th>Nombre del Producto</th>
+                <th>FK Sku</th>
+                <th>Fecha de Pedido</th>
+                <th>Cantidad</th>
+                <th>Valor Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for x in pedidos %}
+            <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{x.idPedido}}</td>
+                <td>{{x.idEmpleado}}</td>
+                <td>{{x.Fksku.nombre}}</td>
+                <td>{{x.Fksku.sku}}</td>
+                <td>{{x.fechaPedido}}</td>
+                <td>{{x.cantidad}}</td>
+                <td>{{ x.valorTotal }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="7" style="text-align: right;"><strong>Valor Total:</strong></td>
+                <td id="valor-total"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    var tabla = document.getElementsByClassName("table")[0]; // Obtener la tabla
+    var filas = tabla.getElementsByTagName("tr"); // Obtener todas las filas de la tabla
+
+    var total = 0;
+
+    // Recorrer cada fila de la tabla, comenzando desde la segunda fila (índice 1)
+    for (var i = 1; i < filas.length - 1; i++) {
+        var celdaValorTotal = filas[i].getElementsByTagName("td")[7]; // Obtener la celda del valor total (índice 7)
+        var valorTotal = parseFloat(celdaValorTotal.textContent); // Obtener el valor total como número decimal
+
+        // Verificar si el valor total es un número válido
+        if (!isNaN(valorTotal)) {
+            total += valorTotal; // Sumar el valor total al total acumulado
+        }
+    }
+
+    // Mostrar el valor total en la celda correspondiente
+    var celdaValorTotal = document.getElementById("valor-total");
+    celdaValorTotal.innerText = "$" + total.toFixed(2);
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "./base.html" %}
+
+{% block title %} Gestion del Sistema {% endblock %}
+
+{% block body %}
+
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Buscar Proveedor</title>
+</head>
+
+<body>
+    <h1>Buscar Proveedor</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="buscar">Buscar:</label>
+        <input type="text" id="buscar" name="buscar">
+        <button type="submit">Buscar</button>
+    </form>
+
+    <h2>Resultados de la búsqueda:</h2>
+
+    {% if proveedores %}
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <!-- Agrega más columnas según tus necesidades -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for proveedor in proveedores %}
+            <tr>
+                <td>{{ proveedor.idProveedor }}</td>
+                <td>{{ proveedor.nombre }}</td>
+                <td>{{ proveedor.direccion }}</td>
+                <!-- Muestra más atributos según tus necesidades -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No se encontraron proveedores.</p>
+    {% endif %}
+</body>
+
+</html>
+
+
+
+{% endblock %}

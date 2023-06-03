@@ -1,0 +1,50 @@
+{% extends "./base.html" %}
+
+{% block title %} Gestion del Sistema {% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <h2>Edición de Pedidos </h2>
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="{% url 'actualizar_pedido' pedidos.idPedido %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="{{ form.idEmpleado.id_for_label }}">ID Empleado:</label>
+                        <input type="text" id="id_Empleado" class="form-control"
+                            value="{{ form.instance.idEmpleado.idEmpleado }}" readonly>
+                        <br>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.Fksku.id_for_label }}">Nombre del Producto:</label>
+                        <input type="text" id="id_Fksku" class="form-control" value="{{ form.instance.Fksku.nombre }}"
+                            readonly>
+                        <br>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_nombreProductoB">Nombre del Producto:</label>
+                        <input type="text" id="id_nombreProductoA" class="form-control"
+                            value="{{ form.instance.Fksku.sku }}" readonly>
+                        <br>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.fechaPedido.id_for_label }}">Fecha De Entrada:</label>
+                        {{ form.fechaPedido }}
+                        <br>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.cantidad.id_for_label }}">Cantidad:</label>
+                        <br>
+                        {{ form.cantidad }}
+                    </div>
+                    <br>
+                    <button type="submit">Actualizar</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
