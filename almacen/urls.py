@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import GenerarReporteView, GenerarReporteIngresoView
+from .views import GenerarReporteView, GenerarReporteIngresoView, ReporteExcel
 
 urlpatterns = [
 
@@ -87,4 +87,6 @@ urlpatterns = [
     path('generar_reporte', GenerarReporteView.as_view(), name='generar_reporte'),
     path('generar_reporte_ingresos', GenerarReporteIngresoView.as_view(),
          name='generar_reporte_ingresos'),
+    path('generar_excel/', ReporteExcel.as_view(),
+         name='generar_excel'),
 ]

@@ -6,12 +6,15 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.views import View
 from django.db.models import Q
+from openpyxl import Workbook
+from django.http import HttpResponse
 
 
 # Create your views here.
 
 
 def inicio(request):
+
     return render(request, "inicio.html")
 
 
@@ -447,41 +450,79 @@ def reporteIngresos(request):
 
 class GenerarReporteView(View):
     def post(self, request):
-        # Obtiene las fechas de inicio y fin del formulario
+
         fecha_inicio = request.POST.get('fecha_inicio')
         fecha_fin = request.POST.get('fecha_fin')
 
-        # Obtiene el nombre del producto y FKSku del formulario
         nombre_producto = request.POST.get('nombre_producto')
         fksku = request.POST.get('fksku')
 
-        # Realiza la consulta a la base de datos para obtener los pedidos en el rango de fechas y con los criterios adicionales
         pedidos = Pedido.objects.filter(
             fechaPedido__range=[fecha_inicio, fecha_fin],
             Fksku__nombre__icontains=nombre_producto,
             Fksku__sku__icontains=fksku
         )
 
-        # Renderiza el template del informe con los datos obtenidos
         return render(request, 'reportePedido.html', {'pedidos': pedidos})
 
 
 class GenerarReporteIngresoView(View):
     def post(self, request):
-        # Obtiene las fechas de inicio y fin del formulario
         fecha_inicio = request.POST.get('fecha_inicio')
         fecha_fin = request.POST.get('fecha_fin')
 
-        # Obtiene el nombre del producto y FKSku del formulario
         nombre_producto = request.POST.get('nombre_producto')
         fksku = request.POST.get('fksku')
 
-        # Realiza la consulta a la base de datos para obtener los pedidos en el rango de fechas y con los criterios adicionales
         entradaAlmacenes = EntradaAlmacen.objects.filter(
             fechaEntrada__range=[fecha_inicio, fecha_fin],
             Fksku__nombre__icontains=nombre_producto,
             Fksku__sku__icontains=fksku
         )
 
-        # Renderiza el template del informe con los datos obtenidos
         return render(request, 'reporteIngresos.html', {'entradaAlmacenes': entradaAlmacenes})
+
+
+class ReporteExcel(View):
+    def get(self, request):
+        fecha_inicio = request.GET.get('fecha_inicio')
+        fecha_fin = request.GET.get('fecha_fin')
+
+        nombre_producto = request.GET.get('nombre_producto')
+        fksku = request.GET.get('fksku')
+
+        entradaAlmacenes = EntradaAlmacen.objects.filter(
+            fechaEntrada__range=[fecha_inicio, fecha_fin],
+            Fksku__nombre__icontains=nombre_producto,
+            Fksku__sku__icontains=fksku
+        )
+
+        wb = Workbook()
+        ws = wb.active
+        ws['B1'] = "REPORTE DE INGRESOS"
+
+        ws.merge_cells("B1:E1")
+        ws['B3'] = 'ID Entrada'
+        ws['C3'] = 'Nombre del Producto'
+        ws['D3'] = 'FK Sku'
+        ws['E3'] = 'Fecha de Ingreso'
+        ws['F3'] = 'Cantidad'
+        ws['G3'] = 'Precio Unitario'
+        ws['H3'] = 'Valor Total'
+
+        cont = 4
+        for x in entradaAlmacenes:
+            ws.cell(row=cont, column=2).value = x.idEntradaAlmacen
+            ws.cell(row=cont,  column=3).value = x.Fksku.nombre
+            ws.cell(row=cont, column=4).value = x.Fksku.sku
+            ws.cell(row=cont, column=5).value = x.fechaEntrada
+            ws.cell(row=cont, column=6).value = x.cantidad
+            ws.cell(row=cont, column=7).value = x.Fksku.precio
+            ws.cell(row=cont, column=8).value = x.cantidad * x.Fksku.precio
+            cont += 1
+
+        response = HttpResponse(content_type="application/ms-excel")
+        content = "attachment; filename=ReporteExcel.xlsx"
+        response['Content-Disposition'] = content
+        wb.save(response)
+        return response

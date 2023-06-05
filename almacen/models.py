@@ -76,6 +76,7 @@ class EntradaAlmacen(models.Model):
 
 
 class Pedido(models.Model):
+
     idPedido = models.AutoField(primary_key=True)
     idEmpleado = models.ForeignKey(Empleado, on_delete=models.CASCADE)
     Fksku = models.ForeignKey(Producto, on_delete=models.CASCADE)
