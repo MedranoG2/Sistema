@@ -448,39 +448,98 @@ def reporteIngresos(request):
     return render(request, "reporteIngresos.html", {'entradaAlmacenes': entradaAlmacenes})
 
 
-class GenerarReporteView(View):
+class GenerarReportePedidosView(View):
     def post(self, request):
+        context = {}
+        fecha_inicio = request.POST.get(
+            'fecha_inicio') if request.POST.get('fecha_inicio') else ''
+        fecha_fin = request.POST.get(
+            'fecha_fin') if request.POST.get('fecha_fin') else ''
+        nombre_producto = request.POST.get(
+            'nombre_producto') if request.POST.get('nombre_producto') else ''
+        fksku = request.POST.get('fksku') if request.POST.get('fksku') else ''
 
-        fecha_inicio = request.POST.get('fecha_inicio')
-        fecha_fin = request.POST.get('fecha_fin')
-
-        nombre_producto = request.POST.get('nombre_producto')
-        fksku = request.POST.get('fksku')
+        context['fecha_inicio'] = fecha_inicio
+        context['fecha_fin'] = fecha_fin
+        context['nombre_producto'] = nombre_producto
+        context['fksku'] = fksku
 
         pedidos = Pedido.objects.filter(
             fechaPedido__range=[fecha_inicio, fecha_fin],
             Fksku__nombre__icontains=nombre_producto,
             Fksku__sku__icontains=fksku
         )
+        context['pedidos'] = pedidos
+        return render(request, 'reportePedido.html', context)
 
-        return render(request, 'reportePedido.html', {'pedidos': pedidos})
+
+class ReporteExcelPedidos(View):
+    def get(self, request):
+        fecha_inicio = request.GET.get('fecha_inicio')
+        fecha_fin = request.GET.get('fecha_fin')
+
+        nombre_producto = request.GET.get('nombre_producto')
+        fksku = request.GET.get('fksku')
+
+        pedidos = Pedido.objects.filter(
+            Q(fechaPedido__range=[fecha_inicio, fecha_fin]),
+            Q(Fksku__sku__icontains=fksku),
+            Q(Fksku__nombre__icontains=nombre_producto))
+
+        wb = Workbook()
+        ws = wb.active
+        ws['B1'] = "REPORTE DE PEDIDOS"
+
+        ws.merge_cells("B1:E1")
+        ws['B3'] = 'ID Entrada'
+        ws['C3'] = 'Nombre del Producto'
+        ws['D3'] = 'FK Sku'
+        ws['E3'] = 'Fecha de Ingreso'
+        ws['F3'] = 'Cantidad'
+        ws['G3'] = 'Precio Unitario'
+        ws['H3'] = 'Valor Total'
+
+        cont = 4
+        for x in pedidos:
+            ws.cell(row=cont, column=2).value = x.idPedido
+            ws.cell(row=cont,  column=3).value = x.Fksku.nombre
+            ws.cell(row=cont, column=4).value = x.Fksku.sku
+            ws.cell(row=cont, column=5).value = x.fechaPedido
+            ws.cell(row=cont, column=6).value = x.cantidad
+            ws.cell(row=cont, column=7).value = x.Fksku.precio
+            ws.cell(row=cont, column=8).value = x.cantidad * x.Fksku.precio
+            cont += 1
+
+        response = HttpResponse(content_type="application/ms-excel")
+        content = "attachment; filename=Reporte-Pedidos.xlsx"
+        response['Content-Disposition'] = content
+        wb.save(response)
+        return response
 
 
 class GenerarReporteIngresoView(View):
     def post(self, request):
-        fecha_inicio = request.POST.get('fecha_inicio')
-        fecha_fin = request.POST.get('fecha_fin')
+        context = {}
+        fecha_inicio = request.POST.get(
+            'fecha_inicio') if request.POST.get('fecha_inicio') else ''
+        fecha_fin = request.POST.get(
+            'fecha_fin') if request.POST.get('fecha_fin') else ''
+        nombre_producto = request.POST.get(
+            'nombre_producto') if request.POST.get('nombre_producto') else ''
+        fksku = request.POST.get('fksku') if request.POST.get('fksku') else ''
 
-        nombre_producto = request.POST.get('nombre_producto')
-        fksku = request.POST.get('fksku')
+        context['fecha_inicio'] = fecha_inicio
+        context['fecha_fin'] = fecha_fin
+        context['nombre_producto'] = nombre_producto
+        context['fksku'] = fksku
 
         entradaAlmacenes = EntradaAlmacen.objects.filter(
             fechaEntrada__range=[fecha_inicio, fecha_fin],
             Fksku__nombre__icontains=nombre_producto,
             Fksku__sku__icontains=fksku
         )
-
-        return render(request, 'reporteIngresos.html', {'entradaAlmacenes': entradaAlmacenes})
+        context['entradaAlmacenes'] = entradaAlmacenes
+        return render(request, 'reporteIngresos.html', context)
 
 
 class ReporteExcel(View):
@@ -492,10 +551,9 @@ class ReporteExcel(View):
         fksku = request.GET.get('fksku')
 
         entradaAlmacenes = EntradaAlmacen.objects.filter(
-            fechaEntrada__range=[fecha_inicio, fecha_fin],
-            Fksku__nombre__icontains=nombre_producto,
-            Fksku__sku__icontains=fksku
-        )
+            Q(fechaEntrada__range=[fecha_inicio, fecha_fin]),
+            Q(Fksku__sku__icontains=fksku),
+            Q(Fksku__nombre__icontains=nombre_producto))
 
         wb = Workbook()
         ws = wb.active
@@ -522,7 +580,7 @@ class ReporteExcel(View):
             cont += 1
 
         response = HttpResponse(content_type="application/ms-excel")
-        content = "attachment; filename=ReporteExcel.xlsx"
+        content = "attachment; filename=Reporte-Ingresos.xlsx"
         response['Content-Disposition'] = content
         wb.save(response)
         return response

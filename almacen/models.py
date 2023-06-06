@@ -62,7 +62,7 @@ class EntradaAlmacen(models.Model):
     def valorTotal(self):
         return self.cantidad * self.Fksku.precio
 
-    def str(self):
+    def __str__(self):
         return str(self.idEntradaAlmacen)
 
     def save(self, *args, **kwargs):

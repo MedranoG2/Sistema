@@ -13,23 +13,23 @@
                     <div class="row">
                         <div class="col-md-4">
                             <label for="fecha_inicio">Fecha de inicio:</label>
-                            <input type="date" id="fecha_inicio" name="fecha_inicio" required>
+                            <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{fecha_inicio}}" required>
                         </div>
                         <div class="col-md-4">
                             <label for="fecha_fin">Fecha de fin:</label>
-                            <input type="date" id="fecha_fin" name="fecha_fin" required>
+                            <input type="date" id="fecha_fin" name="fecha_fin" value="{{fecha_fin}}" required>
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <br>
                     <label for="nombre_producto">Nombre del producto:</label>
-                    <input type="text" id="nombre_producto" name="nombre_producto">
+                    <input type="text" id="nombre_producto" name="nombre_producto" value="{{nombre_producto}}">
                 </div>
                 <div class="form-group">
                     <br>
                     <label for="fksku">FK Sku:</label>
-                    <input type="text" id="fksku" name="fksku">
+                    <input type="text" id="fksku" name="fksku" value="{{fksku}}">
                 </div>
                 <br>
                 <div class="row">
@@ -80,7 +80,41 @@
         </tbody>
     </table>
 </div>
-<a href="{% url 'generar_excel' %}">EXPORTAR EXCEL</a>
+<form action="/generar_excel" method="GET">
+    <div class="card border border-dark" hidden>
+        <div class="card-body">
+            {% csrf_token %}
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="fecha_inicio">Fecha de inicio:</label>
+                        <input type="date" id="fecha_inicio2" name="fecha_inicio" value="{{fecha_inicio}}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="fecha_fin">Fecha de fin:</label>
+                        <input type="date" id="fecha_fin2" name="fecha_fin" value="{{fecha_fin}}" required>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <br>
+                <label for="nombre_producto">Nombre del producto:</label>
+                <input type="text" id="nombre_producto2" name="nombre_producto" value="{{nombre_producto}}">
+            </div>
+            <div class="form-group">
+                <br>
+                <label for="fksku">FK Sku:</label>
+                <input type="text" id="fksku2" name="fksku" value="{{fksku}}">
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-md-4">
+                </div>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-outline-success">EXPORTAR EXCEL</button>
+</form>
 
 <script>
     var tabla = document.getElementsByClassName("table")[0];
