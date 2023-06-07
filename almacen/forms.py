@@ -29,7 +29,7 @@ class DepartamentoForm(forms.ModelForm):
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = ['sku', 'nombre', 'precio', 'fkproveedor']
+        fields = ['sku', 'nombre', 'precio', 'codigoBarras', 'fkproveedor']
         widgets = {
             'fkproveedor': forms.Select(attrs={'class': 'form-control'}),
         }
@@ -57,25 +57,30 @@ class EmpladoForm(forms.ModelForm):
 
 
 class AlmacenForm(forms.ModelForm):
+    codigoDeBarras = forms.CharField(
+        label='Codigo de Barras',
+        widget=forms.TextInput(
+            attrs={'class': 'form-control'})
+    )
+
     nombreFksu = forms.CharField(
         label='Nombre del Producto',
         widget=forms.TextInput(
-            attrs={'class': 'form-control', 'readonly': 'readonly'})
+            attrs={'class': 'form-control'})
     )
 
     class Meta:
         model = Almacen
-        # Lo que hare aqui es Fksku Pasarlo como Producto.Nombre
         fields = ['Fksku', 'cantidad']
         widgets = {
-            'Fksku': forms.Select(attrs={'class': 'form-control'}),
+            'Fksku': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
         super(AlmacenForm, self).__init__(*args, **kwargs)
         self.fields['Fksku'].queryset = Producto.objects.all()
-        self.fields['Fksku'].label = 'Nombre del Producto'
-        self.fields['Fksku'].widget.attrs['class'] = 'form-control btn-select'
+        self.fields['Fksku'].label = 'Fksku'
+        self.fields['Fksku'].widget.attrs['class'] = 'form-control'
 
 
 class EntradaAlmacenForm(forms.ModelForm):

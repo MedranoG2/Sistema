@@ -20,6 +20,7 @@ class Producto(models.Model):
     sku = models.CharField(primary_key=True, max_length=50)
     nombre = models.CharField(max_length=50)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
+    codigoBarras = models.CharField(max_length=70)
     fkproveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
 
     def __str__(self):

@@ -25,6 +25,12 @@
                     </div>
                     <div class="form-group">
                         <br>
+                        <label for="codigoBarras">Codigo De Barras:</label>
+                        <br>
+                        {{ form.codigoBarras }}
+                    </div>
+                    <div class="form-group">
+                        <br>
                         <label for="nombre">Nombre:</label>
                         <br>
                         {{ form.nombre }}
@@ -47,6 +53,8 @@
             </div>
         </div>
     </div>
+
+
     <div class="col-sm-12 col-md-6 col-lg-8 py-4 col-xl-8">
         <h1>Listado de Productos</h1>
         <br>
@@ -66,7 +74,8 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>ID Producto</th>
+                            <th>SKU</th>
+                            <th>Codigo de Barras</th>
                             <th>Nombre</th>
                             <th>Precio</th>
                             <th>Proveedor</th>
@@ -78,6 +87,7 @@
                         <tr>
                             <td>{{forloop.counter}}</td>
                             <td>{{x.sku}}</td>
+                            <td>{{x.codigoBarras}}</td>
                             <td>{{x.nombre}}</td>
                             <td>{{x.precio}}</td>
                             <td>{{ x.fkproveedor.nombre }}</td>
@@ -93,4 +103,22 @@
             </div>
     </div>
 </div>
+<script>
+    document.addEventListener('keydown', function (event) {
+        var skuField = document.getElementById('sku');
+        var codigoBarrasField = document.getElementById('codigo_barras');
+
+        // Verificar si el campo SKU tiene el foco y el código de barras no está vacío
+        if (document.activeElement === skuField && event.target.value !== '') {
+            event.preventDefault(); // Evitar que se ingresen caracteres adicionales
+
+            // Asignar el valor del código de barras al campo SKU
+            skuField.value = event.target.value;
+            codigoBarrasField.value = event.target.value;
+
+            // Limpiar el valor del código de barras después de llenar el campo SKU
+            event.target.value = '';
+        }
+    });
+</script>
 {% endblock %}

@@ -15,19 +15,30 @@
         {% endfor %}
         {% endif %}
         <h2>Registro de Almacen</h2>
+        <form method="post" action="{% url 'almacen_view' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" id="buscar" name="codigoBarras" class="form-control mr-2" style="width: 280px;"
+                    placeholder="Buscar">
+                <button type="submit" class="btn btn-outline-primary">
+                    OPRIME
+                </button>
+            </div>
+        </form>
+
         <div class="card border border-dark">
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
                     <div class="form-group">
-                        <label for="Fksku">Nombre Del producto:</label>
+                        <label for="Fksku">FK SKU:</label>
                         <br>
                         {{ form.Fksku }}
                         <br>
                     </div>
 
                     <div class="form-group">
-                        <label for="Nombre del Producto">FK Sku:</label>
+                        <label for="Nombre del Producto">Nombre del Producto</label>
 
                         {{ form.nombreFksu }}
                     </div>
@@ -55,38 +66,40 @@
                     <img src="/static/img/search.svg">
                 </button>
             </div>
-
-            <div class="table-responsive py-2">
-                <br>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>ID Almacen</th>
-                            <th>Nombre del Producto</th>
-                            <th>FK Sku</th>
-                            <th>Cantidad</th>
-                            <th colspan="2">Opciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for x in almacenes %}
-                        <tr>
-                            <td>{{forloop.counter}}</td>
-                            <td>{{x.idAlmacen}}</td>
-                            <td>{{x.Fksku.nombre}}</td>
-                            <td>{{ x.Fksku.sku }}</td>
-                            <td>{{ x.cantidad }}</td>
-                            <td><a href="/edicionAlmacen/{{x.idAlmacen}}" class="btn btn-outline-primary"><img
-                                        src="/static/img/editar.svg"></a></td>
-                            <td><a href=" /eliminarAlmacen/{{x.idAlmacen}}" class="btn btn-outline-danger">
-                                    <img src="/static/img/borrar.svg">
-                                </a></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        </form>
+        <div class="table-responsive py-2">
+            <br>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID Almacen</th>
+                        <th>Nombre del Producto</th>
+                        <th>FK Sku</th>
+                        <th>Codigo de Barras</th>
+                        <th>Cantidad</th>
+                        <th colspan="2">Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for x in almacenes %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{x.idAlmacen}}</td>
+                        <td>{{x.Fksku.nombre}}</td>
+                        <td>{{ x.Fksku.sku }}</td>
+                        <td>{{ x.Fksku.codigoBarras }}</td>
+                        <td>{{ x.cantidad }}</td>
+                        <td><a href="/edicionAlmacen/{{x.idAlmacen}}" class="btn btn-outline-primary"><img
+                                    src="/static/img/editar.svg"></a></td>
+                        <td><a href=" /eliminarAlmacen/{{x.idAlmacen}}" class="btn btn-outline-danger">
+                                <img src="/static/img/borrar.svg">
+                            </a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

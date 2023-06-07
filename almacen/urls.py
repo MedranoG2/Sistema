@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from .views import GenerarReporteIngresoView, ReporteExcel, GenerarReportePedidosView, ReporteExcelPedidos
 
+
 urlpatterns = [
 
 
@@ -94,4 +95,6 @@ urlpatterns = [
          name='generar_reporte_pedidos'),
     path('generar_excel_pedidos/', ReporteExcelPedidos.as_view(),
          name='generar_excel_pedidos'),
+
+    path('registroAlmacen', views.almacen_view, name='almacen_view'),
 ]

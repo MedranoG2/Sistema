@@ -1,3 +1,5 @@
+from .models import Proveedor
+from .forms import ProveedorForm
 from django.shortcuts import render, redirect
 from .models import Proveedor, Producto, Departamento, Empleado, Almacen, EntradaAlmacen, Pedido
 from django.contrib import messages
@@ -8,6 +10,7 @@ from django.views import View
 from django.db.models import Q
 from openpyxl import Workbook
 from django.http import HttpResponse
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -36,6 +39,11 @@ def registrarProveedor(request):
             form.save()
             messages.success(request, 'Registro Exitoso!')
             return redirect('registrar_proveedor')
+
+    # Manejar el escaneo del código de barras
+    if request.method == 'POST' and 'codigo_barras' in request.POST:
+        codigo_barras = request.POST.get('codigo_barras')
+        form = ProveedorForm(initial={'sku': codigo_barras})
 
     context = {
         'form': form,
@@ -584,3 +592,24 @@ class ReporteExcel(View):
         response['Content-Disposition'] = content
         wb.save(response)
         return response
+
+
+def almacen_view(request):
+    if request.method == 'POST':
+        form = AlmacenForm(request.POST)
+        if form.is_valid():
+            codigoBarras = form.cleaned_data['codigoDeBarras']
+            try:
+                producto = Producto.objects.get(codigoBarras=codigoBarras)
+                form.fields['nombreFksu'].initial = producto.nombre
+                form.fields['Fksku'].initial = producto.Fksku
+            except Producto.DoesNotExist:
+                form.add_error('codigoDeBarras', 'El producto no existe')
+                return redirect('registrar_almacen')
+    else:
+        form = AlmacenForm()
+        return redirect('registrar_almacen')
+
+    context = {'form': form}
+    print(context)  # Agregado para mostrar el contexto en la consola
+    return render(request, 'registroAlmacen.html', context)
