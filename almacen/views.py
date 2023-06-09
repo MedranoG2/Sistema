@@ -1,3 +1,4 @@
+import json
 from .models import Proveedor
 from .forms import ProveedorForm
 from django.shortcuts import render, redirect
@@ -11,7 +12,12 @@ from django.db.models import Q
 from openpyxl import Workbook
 from django.http import HttpResponse
 from django.http import JsonResponse
-
+import matplotlib.pyplot as plt
+from django.db.models import Sum, F
+from django.db.models.functions import ExtractMonth
+import calendar
+from datetime import datetime
+from decimal import Decimal
 
 # Create your views here.
 
@@ -287,7 +293,33 @@ def registrarAlmacen(request):
             form.save()
             messages.success(request, 'Registro Exitoso!')
             return redirect('registrar_almacen')
+
+    if request.method == 'POST':
+        form = EntradaAlmacenForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Registro Exitoso!')
+            return redirect('registrar_EntradaAlmacen')
+
+    # ESTE ES MI CODIGO PARA LLENAR LOS DATOS AUTOMATICAMENTE APARTIR DEL CODIGO DE BARRAS
+    if request.method == 'POST':
+        codigo_barras = request.POST.get('codigoBarras')
+        try:
+            producto = Producto.objects.get(codigoBarras=codigo_barras)
+            form = AlmacenForm(initial={
+                'codigoBarras': codigo_barras,
+                'nombreFksu': producto.nombre,
+                'Fksku': producto.sku
+            })
+        except Producto.DoesNotExist:
+            form = AlmacenForm()
+            # Asignar el error manualmente al atributo errors
+            form.errors['codigoBarras'] = ['El producto no existe']
+    else:
+        form = AlmacenForm()
+
     context = {
+
         'form': form,
         'almacenes': almacenes
     }
@@ -347,6 +379,23 @@ def registrarEntradaAlmacen(request):
             form.save()
             messages.success(request, 'Registro Exitoso!')
             return redirect('registrar_EntradaAlmacen')
+
+    # AQUI EMPIEZA CODIGO DE BARRAS
+    if request.method == 'POST':
+        codigo_barras = request.POST.get('codigoBarras')
+        try:
+            producto = Producto.objects.get(codigoBarras=codigo_barras)
+            form = EntradaAlmacenForm(initial={
+                'codigoBarras': codigo_barras,
+                'nombreFksu': producto.nombre,
+                'Fksku': producto.sku
+            })
+        except Producto.DoesNotExist:
+            form = EntradaAlmacenForm()
+            # Asignar el error manualmente al atributo errors
+            form.errors['codigoBarras'] = ['El producto no existe']
+    else:
+        form = EntradaAlmacenForm()
 
     context = {
         'form': form,
@@ -481,6 +530,31 @@ class GenerarReportePedidosView(View):
         return render(request, 'reportePedido.html', context)
 
 
+class GenerarReportePedidosGraf(View):
+    def post(self, request):
+        context = {}
+        fecha_inicio = request.POST.get('fecha_inicio', '')
+        fecha_fin = request.POST.get('fecha_fin', '')
+        nombre_producto = request.POST.get('nombre_producto', '')
+        fksku = request.POST.get('fksku', '')
+
+        context['fecha_inicio'] = fecha_inicio
+        context['fecha_fin'] = fecha_fin
+        context['nombre_producto'] = nombre_producto
+        context['fksku'] = fksku
+
+        pedidos = Pedido.objects.filter(
+            fechaPedido__range=[fecha_inicio, fecha_fin],
+            Fksku__nombre__icontains=nombre_producto,
+            Fksku__sku__icontains=fksku
+        ).annotate(month=ExtractMonth('fechaPedido')).values('month').annotate(total=Sum(F('cantidad') * F('Fksku__precio'))).order_by('month')
+
+        valores_pedidos = [float(pedido['total']) for pedido in pedidos]
+        context['valores_pedidos'] = valores_pedidos
+
+        return render(request, "graficoPedido.html", context)
+
+
 class ReporteExcelPedidos(View):
     def get(self, request):
         fecha_inicio = request.GET.get('fecha_inicio')
@@ -596,20 +670,75 @@ class ReporteExcel(View):
 
 def almacen_view(request):
     if request.method == 'POST':
-        form = AlmacenForm(request.POST)
-        if form.is_valid():
-            codigoBarras = form.cleaned_data['codigoDeBarras']
-            try:
-                producto = Producto.objects.get(codigoBarras=codigoBarras)
-                form.fields['nombreFksu'].initial = producto.nombre
-                form.fields['Fksku'].initial = producto.Fksku
-            except Producto.DoesNotExist:
-                form.add_error('codigoDeBarras', 'El producto no existe')
-                return redirect('registrar_almacen')
+        codigo_barras = request.POST.get('codigoBarras')
+        try:
+            producto = Producto.objects.get(codigoBarras=codigo_barras)
+            form = EntradaAlmacenForm(initial={
+                'codigoBarras': codigo_barras,
+                'nombreFksu': producto.nombre,
+                'Fksku': producto.sku
+            })
+        except Producto.DoesNotExist:
+            form = EntradaAlmacenForm()
+            # Asignar el error manualmente al atributo errors
+            form.errors['codigoBarras'] = ['El producto no existe']
     else:
-        form = AlmacenForm()
-        return redirect('registrar_almacen')
+        form = EntradaAlmacenForm()
 
     context = {'form': form}
-    print(context)  # Agregado para mostrar el contexto en la consola
     return render(request, 'registroAlmacen.html', context)
+
+
+def graficoPedido(request):
+    year_actual = datetime.now().year
+    pedidos_por_mes = []
+
+    for month in range(1, 13):
+        # Filtrar pedidos por mes y año
+        pedidos_mes = Pedido.objects.filter(
+            fechaPedido__year=year_actual,
+            fechaPedido__month=month
+        )
+
+        # Calcular la sumatoria de los pedidos del mes
+        total_mes = sum(float(pedido.cantidad * pedido.Fksku.precio)
+                        for pedido in pedidos_mes)
+
+        # Agregar el mes y el total a la lista
+        pedidos_por_mes.append((calendar.month_name[month], total_mes))
+
+    # Obtener las listas separadas de meses y valores totales
+    meses = [mes for mes, _ in pedidos_por_mes]
+    valores_pedidos = [total for _, total in pedidos_por_mes]
+    valores_pedidos_json = json.dumps(valores_pedidos)
+
+    context = {'meses': meses, 'valores_pedidos_json': valores_pedidos_json}
+    return render(request, "graficoPedido.html", context)
+
+
+def graficoIngreso(request):
+
+    year_actual = datetime.now().year
+    Ingresos_por_mes = []
+
+    for month in range(1, 13):
+        # Filtrar pedidos por mes y año
+        Ingresos_mes = EntradaAlmacen.objects.filter(
+            fechaEntrada__year=year_actual,
+            fechaEntrada__month=month
+        )
+
+        # Calcular la sumatoria de los pedidos del mes
+        total_mes = sum(float(EntradaAlmacen.cantidad * EntradaAlmacen.Fksku.precio)
+                        for EntradaAlmacen in Ingresos_mes)
+
+        # Agregar el mes y el total a la lista
+        Ingresos_por_mes.append((calendar.month_name[month], total_mes))
+
+    # Obtener las listas separadas de meses y valores totales
+    meses = [mes for mes, _ in Ingresos_por_mes]
+    valores_ingresos = [total for _, total in Ingresos_por_mes]
+    valores_ingresos_json = json.dumps(valores_ingresos)
+
+    context = {'meses': meses, 'valores_ingresos_json': valores_ingresos_json}
+    return render(request, "graficoIngreso.html", context)

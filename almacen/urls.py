@@ -95,6 +95,7 @@ urlpatterns = [
          name='generar_reporte_pedidos'),
     path('generar_excel_pedidos/', ReporteExcelPedidos.as_view(),
          name='generar_excel_pedidos'),
+    path('graficoPedido/', views.graficoPedido, name='graficoPedido'),
+    path('graficoIngreso/', views.graficoIngreso, name='graficoIngreso'),
 
-    path('registroAlmacen', views.almacen_view, name='almacen_view'),
 ]

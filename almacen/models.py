@@ -2,6 +2,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import transaction
+from django.core.exceptions import ValidationError
+
 
 # Create your models here.
 
@@ -91,10 +93,19 @@ class Pedido(models.Model):
         return str(self.idPedido)
 
     def save(self, *args, **kwargs):
+        # Verificar si la cantidad en Almacen es suficiente
+        almacen = Almacen.objects.get(Fksku=self.Fksku)
+        if self.cantidad > almacen.cantidad:
+            raise ValidationError("No hay suficiente cantidad del producto.")
+
         super(Pedido, self).save(*args, **kwargs)
 
         # Actualizar la cantidad en Almacen
-        almacen = Almacen.objects.get(Fksku=self.Fksku)
-        # Convertir self.cantidad a entero utilizando int()
-        almacen.cantidad -= int(self.cantidad)
+        almacen.cantidad -= self.cantidad
         almacen.save()
+
+        # Verificar si la cantidad en Almacen llega a cero
+        if almacen.cantidad == 0:
+            # Deshabilitar la creación de nuevos pedidos para este producto
+            self.Fksku.puede_pedir = False
+            self.Fksku.save()
