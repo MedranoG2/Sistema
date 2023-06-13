@@ -1,3 +1,5 @@
+from django.shortcuts import render
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 from .models import Proveedor
 from .forms import ProveedorForm
@@ -364,6 +366,7 @@ def registrarEntradaAlmacen(request):
     form = EntradaAlmacenForm()
     entradaAlmacenes = EntradaAlmacen.objects.all()
 
+    # Filtrar entradas por búsqueda
     if request.method == 'POST':
         buscar = request.POST.get('buscar')
 
@@ -373,6 +376,7 @@ def registrarEntradaAlmacen(request):
                 Q(Fksku_id__nombre__icontains=buscar) |
                 Q(Fksku_id__sku__icontains=buscar)).distinct()
 
+    # Procesar el formulario de registro de entrada
     if request.method == 'POST':
         form = EntradaAlmacenForm(request.POST)
         if form.is_valid():
@@ -380,7 +384,7 @@ def registrarEntradaAlmacen(request):
             messages.success(request, 'Registro Exitoso!')
             return redirect('registrar_EntradaAlmacen')
 
-    # AQUI EMPIEZA CODIGO DE BARRAS
+    # Procesar el escaneo de código de barras
     if request.method == 'POST':
         codigo_barras = request.POST.get('codigoBarras')
         try:
@@ -392,14 +396,25 @@ def registrarEntradaAlmacen(request):
             })
         except Producto.DoesNotExist:
             form = EntradaAlmacenForm()
-            # Asignar el error manualmente al atributo errors
             form.errors['codigoBarras'] = ['El producto no existe']
     else:
         form = EntradaAlmacenForm()
 
+    # Paginación de la tabla de entradas
+    # Mostrar 10 elementos por página
+    paginator = Paginator(entradaAlmacenes, 8)
+    page = request.GET.get('page')  # Obtener el número de página actual
+
+    try:
+        entradaAlmacenes_paginadas = paginator.page(page)
+    except PageNotAnInteger:
+        entradaAlmacenes_paginadas = paginator.page(1)
+    except EmptyPage:
+        entradaAlmacenes_paginadas = paginator.page(paginator.num_pages)
+
     context = {
         'form': form,
-        'entradaAlmacenes': entradaAlmacenes
+        'entradaAlmacenes': entradaAlmacenes_paginadas
     }
 
     return render(request, 'registroEntradaAlmacen.html', context)

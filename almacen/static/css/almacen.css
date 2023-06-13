@@ -1,0 +1,22 @@
+#buscar {
+    position: relative;
+    background-color: transparent;
+    border: none;
+    padding: 10px;
+    z-index: 1;
+}
+
+#buscar::before {
+    content: "";
+    background-image: url("/static/img/upc.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    pointer-events: none;
+}

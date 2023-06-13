@@ -49,10 +49,23 @@
                     </div>
                     <br>
                     <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
+                    <button id="btnNuevo" class="btn btn-primary btn-block text-white">Nuevo</button>
                 </form>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const btnNuevo = document.getElementById('btnNuevo');
+        btnNuevo.addEventListener('click', () => {
+            Swal.fire({
+                title: '¡Hola mundo!',
+                icon: 'info',
+                confirmButtonText: 'OK'
+            });
+        });
+    </script>
 
 
     <div class="col-sm-12 col-md-6 col-lg-8 py-4 col-xl-8">
@@ -93,7 +106,7 @@
                             <td>{{ x.fkproveedor.nombre }}</td>
                             <td><a href="/edicionProducto/{{x.sku}}" class="btn btn-outline-primary"><img
                                         src="/static/img/editar.svg"></a></td>
-                            <td><a href=" /eliminarProducto/{{x.sku}}" class="btn btn-outline-danger">
+                            <td><a href=" /eliminarProducto/{{x.sku}}" class="btn btn-outline-danger btnEliminacion">
                                     <img src="/static/img/borrar.svg">
                                 </a></td>
                         </tr>

@@ -4,6 +4,7 @@
 
 {% block body %}
 <div class="row">
+
     <div class="col-sm-12 col-md-6 col-lg-4 py-4 col-xl-4">
         {% if messages %}
         {% for message in messages %}
@@ -79,9 +80,10 @@
                             <td>{{x.nombre}}</td>
                             <td>{{x.direccion}}</td>
                             <td>{{ x.telefono }}</td>
-                            <td><a href="/edicionProveedor/{{x.idProveedor}}" class="btn btn-outline-primary"><img
+                            <td><a href="/edicionProveedor/{{x.idProveedor}}" class="btn btn-outline-primary "><img
                                         src="/static/img/editar.svg"></a></td>
-                            <td><a href=" /eliminarProveedor/{{x.idProveedor}}" class="btn btn-outline-danger">
+                            <td><a href=" /eliminarProveedor/{{x.idProveedor}}"
+                                    class="btn btn-outline-danger btnEliminacion">
                                     <img src="/static/img/borrar.svg">
                                 </a></td>
                         </tr>

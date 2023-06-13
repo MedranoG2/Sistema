@@ -101,24 +101,98 @@
                     <tbody>
                         {% for x in entradaAlmacenes %}
                         <tr>
-                            <td>{{forloop.counter}}</td>
-                            <td>{{x.idEntradaAlmacen}}</td>
-                            <td>{{x.Fksku.nombre}}</td>
+                            <td>{{ entradaAlmacenes.start_index|add:forloop.counter0 }}</td>
+                            <td>{{ x.idEntradaAlmacen }}</td>
+                            <td>{{ x.Fksku.nombre }}</td>
                             <td>{{ x.Fksku.sku }}</td>
                             <td>{{ x.fechaEntrada }}</td>
                             <td>{{ x.cantidad }}</td>
-                            <td><a href="/edicionEntradaAlmacen/{{x.idEntradaAlmacen}}"
+                            <td><a href="/edicionEntradaAlmacen/{{ x.idEntradaAlmacen }}"
                                     class="btn btn-outline-primary"><img src="/static/img/editar.svg"></a></td>
-                            <td><a href=" /eliminarEntradaAlmacen/{{x.idEntradaAlmacen}}"
-                                    class="btn btn-outline-danger">
-                                    <img src="/static/img/borrar.svg">
-                                </a></td>
-
+                            <td><a href="/eliminarEntradaAlmacen/{{ x.idEntradaAlmacen }}"
+                                    class="btn btn-outline-danger btnEliminacion"><img src="/static/img/borrar.svg"></a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if entradaAlmacenes.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1" aria-label="First">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="visually-hidden">First</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ entradaAlmacenes.previous_page_number }}"
+                            aria-label="Previous">
+                            <span aria-hidden="true">&lsaquo;</span>
+                            <span class="visually-hidden">Previous</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true" aria-label="First">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="visually-hidden">First</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true" aria-label="Previous">
+                            <span aria-hidden="true">&lsaquo;</span>
+                            <span class="visually-hidden">Previous</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for page in entradaAlmacenes.paginator.page_range %}
+                    {% if page == entradaAlmacenes.number %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ page }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if entradaAlmacenes.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ entradaAlmacenes.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&rsaquo;</span>
+                            <span class="visually-hidden">Next</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ entradaAlmacenes.paginator.num_pages }}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;</span>
+                            <span class="visually-hidden">Last</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true" aria-label="Next">
+                            <span aria-hidden="true">&rsaquo;</span>
+                            <span class="visually-hidden">Next</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true" aria-label="Last">
+                            <span aria-hidden="true">&raquo;</span>
+                            <span class="visually-hidden">Last</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+
     </div>
+</div>
 </div>
 {% endblock %}

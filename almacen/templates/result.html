@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Lector de código de barras</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#barcodeInput').focus(); // Enfoca automáticamente el campo de entrada de texto
+
+            $('#barcodeInput').on('input', function () {
+                var barcode = $(this).val();
+
+                if (barcode.endsWith('\n')) {
+                    barcode = barcode.trim(); // Elimina espacios en blanco y caracteres de nueva línea
+
+                    // Realiza las operaciones necesarias con el código de barras (almacenamiento, procesamiento, etc.)
+                    // Puedes hacer una solicitud AJAX a tu vista de Django para procesar el código de barras en el servidor
+
+                    alert('Código de barras leído: ' + barcode);
+
+                    $(this).val(''); // Limpia el campo de entrada de texto para el próximo escaneo
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Lector de código de barras</h1>
+    <input type="text" id="barcodeInput" autofocus>
+</body>
+
+</html>
