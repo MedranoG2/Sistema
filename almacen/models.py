@@ -28,17 +28,6 @@ class Producto(models.Model):
     def __str__(self):
         return self.nombre
 
-    def save(self, *args, **kwargs):
-        if Producto.objects.filter(sku=self.sku).exists():
-            # SKU duplicado, muestra el SweetAlert2
-            import json
-            from django.http import HttpResponse
-            response_data = {'sku_duplicado': True}
-            return HttpResponse(json.dumps(response_data), content_type='application/json')
-        else:
-            # SKU no duplicado, guarda el producto normalmente
-            super().save(*args, **kwargs)
-
 
 class Departamento(models.Model):
     idDepartamento = models.CharField(primary_key=True, max_length=50)

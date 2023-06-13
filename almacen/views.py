@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-import json
+
 from .models import Proveedor
 from .forms import ProveedorForm
 from django.shortcuts import render, redirect
@@ -12,7 +12,6 @@ from django.contrib.auth import authenticate, login
 from django.views import View
 from django.db.models import Q
 from openpyxl import Workbook
-from django.http import HttpResponse
 from django.http import JsonResponse
 import matplotlib.pyplot as plt
 from django.db.models import Sum, F
@@ -20,6 +19,8 @@ from django.db.models.functions import ExtractMonth
 import calendar
 from datetime import datetime
 from decimal import Decimal
+from django.http import HttpResponse
+import json
 
 # Create your views here.
 
@@ -110,12 +111,16 @@ def registrarProducto(request):
                 Q(nombre__icontains=buscar) |
                 Q(sku__icontains=buscar)).distinct()
 
-    if request.method == 'POST':
         form = ProductoForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Registro Exitoso!')
-            return redirect('registrar_producto')
+            sku = form.cleaned_data['sku']
+            existencia_producto = Producto.objects.filter(sku=sku)
+            if existencia_producto.exists():
+                messages.error(request, 'SKU duplicado')
+            else:
+                form.save()
+                messages.success(request, 'Registro Exitoso!')
+                return redirect('registrar_producto')
 
     context = {
         'form': form,
