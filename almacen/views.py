@@ -469,18 +469,19 @@ def registrarPedido(request):
     pedidos = Pedido.objects.all()
     print("hola3")
 
-    if form.is_valid():
-        print("hola1")
-        id_empleado = form.cleaned_data['idEmpleado']
+    if request.method == 'POST':
+        form = PedidoForm(request.POST)
+        if form.is_valid():
+            print("hola1")
+            id_empleado = form.cleaned_data['idEmpleado']
+            if not Empleado.objects.filter(idEmpleado=id_empleado).exists():
+                print("hola")
+                messages.error(request, 'El número de empleado no existe.')
+                return redirect('registrar_Pedido')
 
-        if not Empleado.objects.filter(idEmpleado=id_empleado).exists():
-            print("hola")
-            messages.error(request, 'El número de empleado no existe.')
+            form.save()
+            messages.success(request, 'Registro Exitoso!')
             return redirect('registrar_Pedido')
-
-        form.save()
-        messages.success(request, 'Registro Exitoso!')
-        return redirect('registrar_Pedido')
 
     codigo_barras = request.POST.get('codigoBarras')
     if codigo_barras:
