@@ -467,18 +467,20 @@ def eliminarEntradaAlmacen(request, codigo):
 def registrarPedido(request):
     form = PedidoForm()
     pedidos = Pedido.objects.all()
+    print("hola3")
 
-    if request.method == 'POST':
-        form = PedidoForm(request.POST)
-        if form.is_valid():
-            id_empleado = form.cleaned_data['idEmpleado']
-            if not Empleado.objects.filter(idEmpleado=id_empleado).exists():
-                messages.error(request, 'El número de empleado no existe.')
-                return redirect('registrar_Pedido')
+    if form.is_valid():
+        print("hola1")
+        id_empleado = form.cleaned_data['idEmpleado']
 
-            form.save()
-            messages.success(request, 'Registro Exitoso!')
+        if not Empleado.objects.filter(idEmpleado=id_empleado).exists():
+            print("hola")
+            messages.error(request, 'El número de empleado no existe.')
             return redirect('registrar_Pedido')
+
+        form.save()
+        messages.success(request, 'Registro Exitoso!')
+        return redirect('registrar_Pedido')
 
     codigo_barras = request.POST.get('codigoBarras')
     if codigo_barras:
