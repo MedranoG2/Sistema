@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import GenerarReporteIngresoView, ReporteExcel, GenerarReportePedidosView, ReporteExcelPedidos
+from .views import GenerarReporteIngresoView, ReporteExcel, GenerarReportePedidosView, ReporteExcelPedidos, ReporteExcelAlmacen
 
 
 urlpatterns = [
@@ -98,4 +98,6 @@ urlpatterns = [
     path('graficoPedido/', views.graficoPedido, name='graficoPedido'),
     path('graficoIngreso/', views.graficoIngreso, name='graficoIngreso'),
 
+    path('generar_excel_almacen/', ReporteExcelAlmacen.as_view(),
+         name='generar_excel_almacen'),
 ]

@@ -117,17 +117,24 @@ class EntradaAlmacenForm(forms.ModelForm):
 
 
 class PedidoForm(forms.ModelForm):
-    nombreProductoB = forms.ModelChoiceField(
-        queryset=Producto.objects.all(), label='Nombre del Producto',
-        widget=forms.Select(attrs={'class': 'form-control btn-select'})
+    codigoBarras = forms.CharField(
+        label='Codigo de Barras',
+        widget=forms.TextInput(
+            attrs={'class': 'form-control'})
+    )
+    nombreFksu = forms.CharField(
+        label='Nombre del Producto',
+        widget=forms.TextInput(
+            attrs={'class': 'form-control'})
     )
 
     class Meta:
         model = Pedido
-        fields = ['nombreProductoB', 'idEmpleado',
+        fields = ['nombreFksu', 'idEmpleado',
                   'Fksku', 'fechaPedido', 'cantidad']
         widgets = {
-            'Fksku': forms.TextInput(attrs={'class': 'form-control fksku-input', 'readonly': 'readonly'}),
+            'Fksku': forms.TextInput(attrs={'class': 'form-control fksku-input'}),
+            'idEmpleado': forms.TextInput(attrs={'class': 'form-control fksku-input'}),
             'fechaPedido': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'},
                                            format='%Y-%m-%d',
                                            ),
@@ -137,5 +144,7 @@ class PedidoForm(forms.ModelForm):
         language = get_language()
         activate('es')  # Activa el idioma español
         super(PedidoForm, self).__init__(*args, **kwargs)
-        self.fields['nombreProductoB'].widget.attrs['class'] = 'form-control btn-select'
+        self.fields['Fksku'].queryset = Producto.objects.all()
+        self.fields['Fksku'].label = 'Fksku'
+        self.fields['Fksku'].widget.attrs['class'] = 'form-control'
         self.fields['fechaPedido'].initial = date.today()

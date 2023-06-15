@@ -13,6 +13,22 @@
         </div>
         {% endfor %}
         {% endif %}
+        {% if form.errors %}
+        <div class="alert alert-dismissible alert-danger">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {% for field_errors in form.errors.values %}
+            {% for error in field_errors %}
+            <strong class="text-dark">
+                {% if error == 'Empleado with this IdEmpleado already exists.' %}
+                Empleado con este ID ya existe.
+                {% else %}
+                {{ error }}
+                {% endif %}
+            </strong>
+            {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
         <h2>Registro de Empleado</h2>
         <div class="card border border-dark">
             <div class="card-body">

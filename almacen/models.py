@@ -12,7 +12,7 @@ class Proveedor(models.Model):
     idProveedor = models.CharField(primary_key=True, max_length=10)
     nombre = models.CharField(max_length=50)
     direccion = models.CharField(max_length=50)
-    telefono = models.CharField(max_length=20)
+    telefono = models.IntegerField()
 
     def __str__(self):
         return self.idProveedor
@@ -95,17 +95,11 @@ class Pedido(models.Model):
     def save(self, *args, **kwargs):
         # Verificar si la cantidad en Almacen es suficiente
         almacen = Almacen.objects.get(Fksku=self.Fksku)
-        if self.cantidad > almacen.cantidad:
+        if int(self.cantidad) > almacen.cantidad:
             raise ValidationError("No hay suficiente cantidad del producto.")
 
         super(Pedido, self).save(*args, **kwargs)
 
         # Actualizar la cantidad en Almacen
-        almacen.cantidad -= self.cantidad
+        almacen.cantidad -= int(self.cantidad)
         almacen.save()
-
-        # Verificar si la cantidad en Almacen llega a cero
-        if almacen.cantidad == 0:
-            # Deshabilitar la creación de nuevos pedidos para este producto
-            self.Fksku.puede_pedir = False
-            self.Fksku.save()

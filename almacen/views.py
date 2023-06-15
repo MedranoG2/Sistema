@@ -1,3 +1,4 @@
+from openpyxl.styles import Alignment
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -470,9 +471,27 @@ def registrarPedido(request):
     if request.method == 'POST':
         form = PedidoForm(request.POST)
         if form.is_valid():
+            id_empleado = form.cleaned_data['idEmpleado']
+            if not Empleado.objects.filter(idEmpleado=id_empleado).exists():
+                messages.error(request, 'El número de empleado no existe.')
+                return redirect('registrar_Pedido')
+
             form.save()
             messages.success(request, 'Registro Exitoso!')
             return redirect('registrar_Pedido')
+
+    codigo_barras = request.POST.get('codigoBarras')
+    if codigo_barras:
+        try:
+            producto = Producto.objects.get(codigoBarras=codigo_barras)
+            form = PedidoForm(initial={
+                'codigoBarras': codigo_barras,
+                'nombreFksu': producto.nombre,
+                'Fksku': producto.sku
+            })
+        except Producto.DoesNotExist:
+            form = PedidoForm()
+            messages.error(request, 'El producto no existe.')
 
     return render(request, 'registroPedido.html', {'form': form, 'pedidos': pedidos})
 
@@ -535,16 +554,22 @@ class GenerarReportePedidosView(View):
         nombre_producto = request.POST.get(
             'nombre_producto') if request.POST.get('nombre_producto') else ''
         fksku = request.POST.get('fksku') if request.POST.get('fksku') else ''
+        nombre_empleado = request.POST.get(
+            'nombre_empleado') if request.POST.get('nombre_empleado') else ''
+        fksku = request.POST.get(
+            'idEmpleado') if request.POST.get('idEmpleado') else ''
 
         context['fecha_inicio'] = fecha_inicio
         context['fecha_fin'] = fecha_fin
         context['nombre_producto'] = nombre_producto
+        context['nombre_empleado'] = nombre_empleado
         context['fksku'] = fksku
 
         pedidos = Pedido.objects.filter(
             fechaPedido__range=[fecha_inicio, fecha_fin],
             Fksku__nombre__icontains=nombre_producto,
-            Fksku__sku__icontains=fksku
+            Fksku__sku__icontains=fksku,
+            idEmpleado__idEmpleado__icontains=nombre_empleado
         )
         context['pedidos'] = pedidos
         return render(request, 'reportePedido.html', context)
@@ -579,13 +604,14 @@ class ReporteExcelPedidos(View):
     def get(self, request):
         fecha_inicio = request.GET.get('fecha_inicio')
         fecha_fin = request.GET.get('fecha_fin')
-
+        nombre_empleado = request.GET.get('nombre_empleado')
         nombre_producto = request.GET.get('nombre_producto')
         fksku = request.GET.get('fksku')
 
         pedidos = Pedido.objects.filter(
             Q(fechaPedido__range=[fecha_inicio, fecha_fin]),
             Q(Fksku__sku__icontains=fksku),
+            Q(idEmpleado__idEmpleado__icontains=nombre_empleado),
             Q(Fksku__nombre__icontains=nombre_producto))
 
         wb = Workbook()
@@ -593,27 +619,87 @@ class ReporteExcelPedidos(View):
         ws['B1'] = "REPORTE DE PEDIDOS"
 
         ws.merge_cells("B1:E1")
-        ws['B3'] = 'ID Entrada'
-        ws['C3'] = 'Nombre del Producto'
-        ws['D3'] = 'FK Sku'
-        ws['E3'] = 'Fecha de Ingreso'
-        ws['F3'] = 'Cantidad'
-        ws['G3'] = 'Precio Unitario'
-        ws['H3'] = 'Valor Total'
+        ws['B3'] = 'ID Pedido'
+        ws['C3'] = 'Nombre del Empleado'
+        ws['D3'] = 'Nombre del Producto'
+        ws['E3'] = 'FK Sku'
+        ws['F3'] = 'Fecha de Pedido'
+        ws['G3'] = 'Cantidad'
+        ws['H3'] = 'Precio Unitario'
+        ws['I3'] = 'Valor Total'
 
         cont = 4
         for x in pedidos:
             ws.cell(row=cont, column=2).value = x.idPedido
-            ws.cell(row=cont,  column=3).value = x.Fksku.nombre
-            ws.cell(row=cont, column=4).value = x.Fksku.sku
-            ws.cell(row=cont, column=5).value = x.fechaPedido
-            ws.cell(row=cont, column=6).value = x.cantidad
-            ws.cell(row=cont, column=7).value = x.Fksku.precio
-            ws.cell(row=cont, column=8).value = x.cantidad * x.Fksku.precio
+            ws.cell(row=cont,  column=3).value = x.idEmpleado.idEmpleado
+            ws.cell(row=cont, column=4).value = x.Fksku.nombre
+            ws.cell(row=cont, column=5).value = x.Fksku.sku
+            ws.cell(row=cont, column=6).value = x.fechaPedido
+            ws.cell(row=cont, column=7).value = x.cantidad
+            ws.cell(row=cont, column=8).value = x.Fksku.precio
+            ws.cell(row=cont, column=9).value = x.cantidad * x.Fksku.precio
             cont += 1
+
+        # Establecer el ancho en píxeles para las columnas
+        # Anchuras deseadas en píxeles
+        column_widths = [22, 22, 37, 22, 22, 22, 22, 22]
+        for i, width in enumerate(column_widths, start=2):
+            # Convertir el índice de columna a letra
+            column_letter = chr(64 + i)
+            ws.column_dimensions[column_letter].width = width
+
+        # Aplicar formato y centrar el contenido de todas las celdas
+        align = Alignment(horizontal='center', vertical='center')
+        for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
+            for cell in row:
+                cell.alignment = align
 
         response = HttpResponse(content_type="application/ms-excel")
         content = "attachment; filename=Reporte-Pedidos.xlsx"
+        response['Content-Disposition'] = content
+        wb.save(response)
+        return response
+
+
+class ReporteExcelAlmacen(View):
+    def get(self, request):
+        wb = Workbook()
+        ws = wb.active
+        ws['B1'] = "REPORTE DE ALMACEN"
+
+        ws.merge_cells("B1:F1")
+        ws['B3'] = 'ID Almacen'
+        ws['C3'] = 'Nombre del Producto'
+        ws['D3'] = 'FK SKU'
+        ws['E3'] = 'Codigo de Barras'
+        ws['F3'] = 'Cantidad'
+
+        cont = 4
+        almacenes = Almacen.objects.all()
+        for x in almacenes:
+            ws.cell(row=cont, column=2).value = x.idAlmacen
+            ws.cell(row=cont, column=3).value = x.Fksku.nombre
+            ws.cell(row=cont, column=4).value = x.Fksku.sku
+            ws.cell(row=cont, column=5).value = x.Fksku.codigoBarras
+            ws.cell(row=cont, column=6).value = x.cantidad
+            cont += 1
+
+        # Establecer el ancho en píxeles para las columnas
+        # Anchuras deseadas en píxeles
+        column_widths = [38, 38, 38, 38, 38, 38]
+        for i, width in enumerate(column_widths, start=2):
+            # Convertir el índice de columna a letra
+            column_letter = chr(64 + i)
+            ws.column_dimensions[column_letter].width = width
+
+        # Aplicar formato y centrar el contenido de todas las celdas
+        align = Alignment(horizontal='center', vertical='center')
+        for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
+            for cell in row:
+                cell.alignment = align
+
+        response = HttpResponse(content_type="application/ms-excel")
+        content = "attachment; filename=Reporte-Almacen.xlsx"
         response['Content-Disposition'] = content
         wb.save(response)
         return response
@@ -680,6 +766,20 @@ class ReporteExcel(View):
             ws.cell(row=cont, column=7).value = x.Fksku.precio
             ws.cell(row=cont, column=8).value = x.cantidad * x.Fksku.precio
             cont += 1
+
+        # Establecer el ancho en píxeles para las columnas
+        # Anchuras deseadas en píxeles
+        column_widths = [22, 37, 22, 22, 22, 22, 22, 22]
+        for i, width in enumerate(column_widths, start=2):
+            # Convertir el índice de columna a letra
+            column_letter = chr(64 + i)
+            ws.column_dimensions[column_letter].width = width
+
+        # Aplicar formato y centrar el contenido de todas las celdas
+        align = Alignment(horizontal='center', vertical='center')
+        for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
+            for cell in row:
+                cell.alignment = align
 
         response = HttpResponse(content_type="application/ms-excel")
         content = "attachment; filename=Reporte-Ingresos.xlsx"
