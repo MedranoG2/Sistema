@@ -6,18 +6,19 @@
 
 <div class="row">
     <div class="col-sm-12 col-md-6 col-lg-4 py-4 col-xl-4">
-        {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
-                {% endfor %}
-        </ul>
-        {% endif %}
+
         <h2>Registro de Pedidos</h2>
 
         <form method="post" action="{% url 'registrar_Pedido' %}">
             {% csrf_token %}
             <div class="form-group">
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                        {% endfor %}
+                </ul>
+                {% endif %}
                 <div class="input-group">
                     <input type="text" id="buscar" name="codigoBarras" class="form-control mr-2" style="width: 280px;"
                         placeholder="Escanear código de barras">
