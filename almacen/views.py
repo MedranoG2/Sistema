@@ -326,6 +326,16 @@ def registrarAlmacen(request):
     else:
         form = AlmacenForm()
 
+    paginator = Paginator(almacenes, 20)
+    page = request.GET.get('page')  # Obtener el número de página actual
+
+    try:
+        almacenes = paginator.page(page)
+    except PageNotAnInteger:
+        almacenes = paginator.page(1)
+    except EmptyPage:
+        almacenes = paginator.page(paginator.num_pages)
+
     context = {
 
         'form': form,
@@ -467,21 +477,23 @@ def eliminarEntradaAlmacen(request, codigo):
 def registrarPedido(request):
     form = PedidoForm()
     pedidos = Pedido.objects.all()
-    print("hola3")
 
     if request.method == 'POST':
         form = PedidoForm(request.POST)
         if form.is_valid():
-            print("hola1")
             id_empleado = form.cleaned_data['idEmpleado']
             if not Empleado.objects.filter(idEmpleado=id_empleado).exists():
-                print("hola")
                 messages.error(request, 'El número de empleado no existe.')
+            else:
+                form.save()
+                messages.success(request, 'Registro Exitoso!')
                 return redirect('registrar_Pedido')
-
-            form.save()
-            messages.success(request, 'Registro Exitoso!')
-            return redirect('registrar_Pedido')
+        else:
+            # Agregar mensajes de error del formulario al contexto, excepto para los campos obligatorios
+            for field, errors in form.errors.items():
+                if field not in ['nombreFksu', 'Fksku', 'fechaPedido', 'cantidad']:
+                    for error in errors:
+                        messages.error(request, f"{field}: {error}")
 
     codigo_barras = request.POST.get('codigoBarras')
     if codigo_barras:
