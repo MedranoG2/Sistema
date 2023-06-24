@@ -100,4 +100,6 @@ urlpatterns = [
 
     path('generar_excel_almacen/', ReporteExcelAlmacen.as_view(),
          name='generar_excel_almacen'),
+
+    path('graficoPastelp/', views.graficoPastelp, name='graficoPastelp'),
 ]

@@ -2,153 +2,155 @@
 
 {% block title %}Registro de Pedidos{% endblock %}
 
-{% block body %}
-<div class="col-sm-12 col-md-6 col-lg-8 py-4 col-xl-8">
-    <h1>Listado de Pedidos</h1>
-    <form action="/generar_reporte_pedidos" method="post">
-        <div class="card border border-dark">
+{% block content %}
+<div class="right_col" role="main">
+    <div class="col-sm-12 col-md-6 col-lg-8 py-4 col-xl-8">
+        <h1>Listado de Pedidos</h1>
+        <form action="/generar_reporte_pedidos" method="post">
+            <div class="card border border-dark">
+                <div class="card-body">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="fecha_inicio">Fecha de inicio:</label>
+                                <input type="date" id="fecha_inicio" name="fecha_inicio" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="fecha_fin">Fecha de fin:</label>
+                                <input type="date" id="fecha_fin" name="fecha_fin" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <br>
+                        <label for="nombre_producto">Nombre del producto:</label>
+                        <input type="text" id="nombre_producto" name="nombre_producto">
+                    </div>
+                    <div class="form-group">
+                        <br>
+                        <label for="nombre_empleado">Numero del Empleado:</label>
+                        <input type="text" id="nombre_empleado" name="nombre_empleado">
+                    </div>
+                    <div class="form-group">
+                        <br>
+                        <label for="fksku">FK Sku:</label>
+                        <input type="text" id="fksku" name="fksku" value="{{fksku}}">
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-outline-success">Generar Reporte</button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="/reportePedido" class="btn btn-outline-success">Actualizar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
+
+
+
+    <div class="table-responsive py-2">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>ID Pedido</th>
+                    <th>Nombre del Empleado</th>
+                    <th>Nombre del Producto</th>
+                    <th>FK Sku</th>
+                    <th>Fecha de Pedido</th>
+                    <th>Cantidad</th>
+                    <th>Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for x in pedidos %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{x.idPedido}}</td>
+                    <td>{{x.idEmpleado}}</td>
+                    <td>{{x.Fksku.nombre}}</td>
+                    <td>{{x.Fksku.sku}}</td>
+                    <td>{{x.fechaPedido}}</td>
+                    <td>{{x.cantidad}}</td>
+                    <td>{{ x.valorTotal }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="7" style="text-align: right;"><strong>Valor Total:</strong></td>
+                    <td id="valor-total"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <form action="/generar_excel_pedidos" method="GET">
+        <div class="card border border-dark" hidden>
             <div class="card-body">
                 {% csrf_token %}
                 <div class="form-group">
                     <div class="row">
                         <div class="col-md-4">
                             <label for="fecha_inicio">Fecha de inicio:</label>
-                            <input type="date" id="fecha_inicio" name="fecha_inicio" required>
+                            <input type="date" id="fecha_inicio2" name="fecha_inicio" value="{{fecha_inicio}}" required>
                         </div>
                         <div class="col-md-4">
                             <label for="fecha_fin">Fecha de fin:</label>
-                            <input type="date" id="fecha_fin" name="fecha_fin" required>
+                            <input type="date" id="fecha_fin2" name="fecha_fin" value="{{fecha_fin}}" required>
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <br>
                     <label for="nombre_producto">Nombre del producto:</label>
-                    <input type="text" id="nombre_producto" name="nombre_producto">
+                    <input type="text" id="nombre_producto2" name="nombre_producto" value="{{nombre_producto}}">
                 </div>
                 <div class="form-group">
                     <br>
-                    <label for="nombre_empleado">Numero del Empleado:</label>
-                    <input type="text" id="nombre_empleado" name="nombre_empleado">
+                    <label for="nombre_empleado">Nombre del Empleado:</label>
+                    <input type="text" id="nombre_empleado2" name="nombre_empleado" value="{{nombre_empleado}}">
                 </div>
                 <div class="form-group">
                     <br>
                     <label for="fksku">FK Sku:</label>
-                    <input type="text" id="fksku" name="fksku" value="{{fksku}}">
+                    <input type="text" id="fksku2" name="fksku" value="{{fksku}}">
                 </div>
                 <br>
                 <div class="row">
                     <div class="col-md-4">
-                        <button type="submit" class="btn btn-outline-success">Generar Reporte</button>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="/reportePedido" class="btn btn-outline-success">Actualizar</a>
                     </div>
                 </div>
             </div>
         </div>
+        <button type="submit" class="btn btn-outline-success">EXPORTAR EXCEL</button>
     </form>
-</div>
 
+    <script>
+        var tabla = document.getElementsByClassName("table")[0]; // Obtener la tabla
+        var filas = tabla.getElementsByTagName("tr"); // Obtener todas las filas de la tabla
 
+        var total = 0;
 
+        // Recorrer cada fila de la tabla, comenzando desde la segunda fila (índice 1)
+        for (var i = 1; i < filas.length - 1; i++) {
+            var celdaValorTotal = filas[i].getElementsByTagName("td")[7]; // Obtener la celda del valor total (índice 7)
+            var valorTotal = parseFloat(celdaValorTotal.textContent); // Obtener el valor total como número decimal
 
-
-<div class="table-responsive py-2">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>ID Pedido</th>
-                <th>Nombre del Empleado</th>
-                <th>Nombre del Producto</th>
-                <th>FK Sku</th>
-                <th>Fecha de Pedido</th>
-                <th>Cantidad</th>
-                <th>Valor Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for x in pedidos %}
-            <tr>
-                <td>{{forloop.counter}}</td>
-                <td>{{x.idPedido}}</td>
-                <td>{{x.idEmpleado}}</td>
-                <td>{{x.Fksku.nombre}}</td>
-                <td>{{x.Fksku.sku}}</td>
-                <td>{{x.fechaPedido}}</td>
-                <td>{{x.cantidad}}</td>
-                <td>{{ x.valorTotal }}</td>
-            </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="7" style="text-align: right;"><strong>Valor Total:</strong></td>
-                <td id="valor-total"></td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<form action="/generar_excel_pedidos" method="GET">
-    <div class="card border border-dark" hidden>
-        <div class="card-body">
-            {% csrf_token %}
-            <div class="form-group">
-                <div class="row">
-                    <div class="col-md-4">
-                        <label for="fecha_inicio">Fecha de inicio:</label>
-                        <input type="date" id="fecha_inicio2" name="fecha_inicio" value="{{fecha_inicio}}" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="fecha_fin">Fecha de fin:</label>
-                        <input type="date" id="fecha_fin2" name="fecha_fin" value="{{fecha_fin}}" required>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <br>
-                <label for="nombre_producto">Nombre del producto:</label>
-                <input type="text" id="nombre_producto2" name="nombre_producto" value="{{nombre_producto}}">
-            </div>
-            <div class="form-group">
-                <br>
-                <label for="nombre_empleado">Nombre del Empleado:</label>
-                <input type="text" id="nombre_empleado2" name="nombre_empleado" value="{{nombre_empleado}}">
-            </div>
-            <div class="form-group">
-                <br>
-                <label for="fksku">FK Sku:</label>
-                <input type="text" id="fksku2" name="fksku" value="{{fksku}}">
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-md-4">
-                </div>
-            </div>
-        </div>
-    </div>
-    <button type="submit" class="btn btn-outline-success">EXPORTAR EXCEL</button>
-</form>
-
-<script>
-    var tabla = document.getElementsByClassName("table")[0]; // Obtener la tabla
-    var filas = tabla.getElementsByTagName("tr"); // Obtener todas las filas de la tabla
-
-    var total = 0;
-
-    // Recorrer cada fila de la tabla, comenzando desde la segunda fila (índice 1)
-    for (var i = 1; i < filas.length - 1; i++) {
-        var celdaValorTotal = filas[i].getElementsByTagName("td")[7]; // Obtener la celda del valor total (índice 7)
-        var valorTotal = parseFloat(celdaValorTotal.textContent); // Obtener el valor total como número decimal
-
-        // Verificar si el valor total es un número válido
-        if (!isNaN(valorTotal)) {
-            total += valorTotal; // Sumar el valor total al total acumulado
+            // Verificar si el valor total es un número válido
+            if (!isNaN(valorTotal)) {
+                total += valorTotal; // Sumar el valor total al total acumulado
+            }
         }
-    }
 
-    // Mostrar el valor total en la celda correspondiente
-    var celdaValorTotal = document.getElementById("valor-total");
-    celdaValorTotal.innerText = "$" + total.toFixed(2);
-</script>
+        // Mostrar el valor total en la celda correspondiente
+        var celdaValorTotal = document.getElementById("valor-total");
+        celdaValorTotal.innerText = "$" + total.toFixed(2);
+    </script>
+</div>
 {% endblock %}

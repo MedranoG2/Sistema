@@ -2,9 +2,9 @@
 
 {% block title %}Registro de Pedidos{% endblock %}
 
-{% block body %}
+{% block content %}
 
-<div class="row">
+<div class="right_col" role="main">
     <div class="col-sm-12 col-md-6 col-lg-4 py-4 col-xl-4">
         <h2>Registro de Pedidos</h2>
         {% if messages %}
@@ -33,24 +33,24 @@
                 </ul>
             </div>
             {% endif %}
-            <form method="post" action="{% url 'registrar_Pedido' %}">
+            <form id="barcodeForm" method="GET" action="{% url 'registrar_Pedido' %}">
                 {% csrf_token %}
-
                 <div class="input-group">
                     <input type="text" id="buscar" name="codigoBarras" class="form-control mr-2" style="width: 280px;"
                         placeholder="Escanear código de barras">
-                    <button type="submit" class="btn btn-outline-primary">
+                    <button id="barcodeButton" type="button" class="btn btn-outline-primary">
                         <img src="/static/img/upc-scan.svg">
                     </button>
                 </div>
+            </form>
+
         </div>
-        </form>
 
         <br>
 
         <div class="card border border-dark">
             <div class="card-body">
-                <form method="post">
+                <form method="post" id="myForm" action="{% url 'registrar_Pedido' %}">
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="CodigoBarras">Codigo de Barras:</label>
@@ -88,7 +88,7 @@
                         {{ form.cantidad }}
                     </div>
                     <br>
-                    <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
+                    <button id="saveButton" type="submit" class="btn btn-success btn-block text-white">Guardar</button>
                 </form>
             </div>
         </div>
@@ -134,4 +134,5 @@
         </div>
     </div>
 </div>
+
 {% endblock %}

@@ -2,8 +2,8 @@
 
 {% block title %}Registro de Proveedor{% endblock %}
 
-{% block body %}
-<div class="row">
+{% block content %}
+<div class="right_col" role="main">
 
     <div class="col-sm-12 col-md-6 col-lg-4 py-4 col-xl-4">
         {% if messages %}
@@ -14,10 +14,10 @@
         </div>
         {% endfor %}
         {% endif %}
-        {% if form.errors %}
+        {% if registro_form.errors %}
         <div class="alert alert-dismissible alert-danger">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {% for field_errors in form.errors.values %}
+            {% for field_errors in registro_form.errors.values %}
             {% for error in field_errors %}
             <strong class="text-dark">
                 {% if error == 'Proveedor with this IdProveedor already exists.' %}
@@ -39,22 +39,22 @@
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="idProveedor">ID Proveedor:</label>
-                        {{ form.idProveedor }}
+                        {{ registro_form.idProveedor }}
                     </div>
                     <div class="form-group">
                         <br>
                         <label for="nombre">Nombre:</label>
-                        {{ form.nombre }}
+                        {{ registro_form.nombre }}
                     </div>
                     <div class="form-group">
                         <br>
                         <label for="direccion">Dirección:</label>
-                        {{ form.direccion }}
+                        {{ registro_form.direccion }}
                     </div>
                     <div class="form-group">
                         <br>
                         <label for="telefono">Teléfono:</label>
-                        {{ form.telefono }}
+                        {{ registro_form.telefono }}
                     </div>
                     <br>
                     <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
@@ -67,48 +67,48 @@
         <br>
         <form method="post" action="{% url 'registrar_proveedor' %}">
             {% csrf_token %}
-            <div class="form-group d-flex">
-                <input type="text" id="buscar" name="buscar" class="form-control mr-2" style="width: 280px;"
-                    placeholder="Buscar">
-                <button type="submit" class="btn btn-outline-primary">
-                    <img src="/static/img/search.svg">
-                </button>
-            </div>
+            {{ buscar_form.as_p }}
+            <button type="submit" class="btn btn-outline-primary">
+                <img src="/static/img/search.svg">
+            </button>
+        </form>
 
 
 
-            <div class="table-responsive py-2">
-                <br>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>ID Proveedor</th>
-                            <th>Nombre</th>
-                            <th>Direccion</th>
-                            <th>Telefono</th>
-                            <th colspan="2">Opciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for x in proveedores %}
-                        <tr>
-                            <td>{{forloop.counter}}</td>
-                            <td>{{x.idProveedor}}</td>
-                            <td>{{x.nombre}}</td>
-                            <td>{{x.direccion}}</td>
-                            <td>{{ x.telefono }}</td>
-                            <td><a href="/edicionProveedor/{{x.idProveedor}}" class="btn btn-outline-primary "><img
-                                        src="/static/img/editar.svg"></a></td>
-                            <td><a href=" /eliminarProveedor/{{x.idProveedor}}"
-                                    class="btn btn-outline-danger btnEliminacion">
-                                    <img src="/static/img/borrar.svg">
-                                </a></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+
+
+        <div class="table-responsive py-2">
+            <br>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID Proveedor</th>
+                        <th>Nombre</th>
+                        <th>Direccion</th>
+                        <th>Telefono</th>
+                        <th colspan="2">Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for x in proveedores %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{x.idProveedor}}</td>
+                        <td>{{x.nombre}}</td>
+                        <td>{{x.direccion}}</td>
+                        <td>{{ x.telefono }}</td>
+                        <td><a href="/edicionProveedor/{{x.idProveedor}}" class="btn btn-outline-primary "><img
+                                    src="/static/img/editar.svg"></a></td>
+                        <td><a href=" /eliminarProveedor/{{x.idProveedor}}"
+                                class="btn btn-outline-danger btnEliminacion">
+                                <img src="/static/img/borrar.svg">
+                            </a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

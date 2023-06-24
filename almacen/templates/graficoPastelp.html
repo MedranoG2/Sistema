@@ -1,0 +1,69 @@
+{% extends "./base.html" %}
+
+{% block title %}Gestión del Sistema{% endblock %}
+
+{% block content %}
+<div class="right_col" role="main">
+    <style>
+        #container {
+            width: 100%;
+            height: 620px;
+            margin: 110px auto 0;
+            /* Ajusta el margen superior (200px en este ejemplo) para mover el gráfico hacia abajo */
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+
+    <div id="container"></div>
+
+    <script type="text/javascript">
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Obtener los datos de gastos desde el contexto
+            var gastos_departamentos = JSON.parse('{{ gastos_departamentos_json|safe }}');
+
+            Highcharts.chart('container', {
+                chart: {
+                    type: 'pie'
+                },
+                title: {
+                    text: 'Gasto por Departamento'
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.y:.2f} $</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.y:.2f} $',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Gasto',
+                    colorByPoint: true,
+                    data: [{
+                        name: '{{ nombres_departamentos.0 }}',
+                        y: gastos_departamentos[0]
+                    }, {
+                        name: '{{ nombres_departamentos.1 }}',
+                        y: gastos_departamentos[1]
+                    }, {
+                        name: '{{ nombres_departamentos.2 }}',
+                        y: gastos_departamentos[2]
+                    }]
+                }]
+            });
+        });
+    </script>
+</div>
+{% endblock %}

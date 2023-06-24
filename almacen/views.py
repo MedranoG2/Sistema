@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from openpyxl.styles import Alignment
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -7,7 +8,7 @@ from .forms import ProveedorForm
 from django.shortcuts import render, redirect
 from .models import Proveedor, Producto, Departamento, Empleado, Almacen, EntradaAlmacen, Pedido
 from django.contrib import messages
-from .forms import ProductoForm, ProveedorForm, DepartamentoForm, EmpladoForm, AlmacenForm, EntradaAlmacenForm, PedidoForm
+from .forms import ProductoForm, ProveedorForm, DepartamentoForm, EmpleadoForm, AlmacenForm, EntradaAlmacenForm, PedidoForm, BuscarForm, BuscarProveedoresForm, BuscarProductosForm
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.views import View
@@ -32,7 +33,8 @@ def inicio(request):
 
 
 def registrarProveedor(request):
-    form = ProveedorForm()
+    buscar_form = BuscarProveedoresForm()
+    registro_form = ProveedorForm()
     proveedores = Proveedor.objects.all()
 
     if request.method == 'POST':
@@ -43,20 +45,22 @@ def registrarProveedor(request):
                 Q(nombre__icontains=buscar) |
                 Q(idProveedor__icontains=buscar)).distinct()
 
-    if request.method == 'POST':
-        form = ProveedorForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Registro Exitoso!')
-            return redirect('registrar_proveedor')
+        else:
+            # Procesar el formulario de registro
+            registro_form = ProveedorForm(request.POST)
+            if registro_form.is_valid():
+                registro_form.save()
+                messages.success(request, 'Registro Exitoso!')
+                return redirect('registrar_proveedor')
 
     # Manejar el escaneo del código de barras
     if request.method == 'POST' and 'codigo_barras' in request.POST:
         codigo_barras = request.POST.get('codigo_barras')
-        form = ProveedorForm(initial={'sku': codigo_barras})
+        registro_form = ProveedorForm(initial={'sku': codigo_barras})
 
     context = {
-        'form': form,
+        'buscar_form': buscar_form,
+        'registro_form': registro_form,
         'proveedores': proveedores
     }
 
@@ -100,7 +104,8 @@ def eliminarProveedor(request, codigo):
 
 
 def registrarProducto(request):
-    form = ProductoForm()
+    buscar_form = BuscarProductosForm()
+    registro_form = ProductoForm()
     proveedores = Proveedor.objects.all()
     productos = Producto.objects.all()
 
@@ -112,19 +117,22 @@ def registrarProducto(request):
                 Q(nombre__icontains=buscar) |
                 Q(sku__icontains=buscar)).distinct()
 
-        form = ProductoForm(request.POST)
-        if form.is_valid():
-            sku = form.cleaned_data['sku']
-            existencia_producto = Producto.objects.filter(sku=sku)
-            if existencia_producto.exists():
-                messages.error(request, 'SKU duplicado')
-            else:
-                form.save()
-                messages.success(request, 'Registro Exitoso!')
-                return redirect('registrar_producto')
+        else:
+            # Procesar el formulario de registro
+            registro_form = ProductoForm(request.POST)
+            if registro_form.is_valid():
+                sku = registro_form.cleaned_data['sku']
+                existencia_producto = Producto.objects.filter(sku=sku)
+                if existencia_producto.exists():
+                    messages.error(request, 'SKU duplicado')
+                else:
+                    registro_form.save()
+                    messages.success(request, 'Registro Exitoso!')
+                    return redirect('registrar_producto')
 
     context = {
-        'form': form,
+        'buscar_form': buscar_form,
+        'registro_form': registro_form,
         'proveedores': proveedores,
         'productos': productos
     }
@@ -219,7 +227,8 @@ def eliminarDepartamento(request, codigo):
 
 
 def registrarEmpleado(request):
-    form = EmpladoForm()
+    buscar_form = BuscarForm()  # Formulario para buscar empleados
+    registro_form = EmpleadoForm()  # Formulario para registrar un nuevo empleado
     departamentos = Departamento.objects.all()
     empleados = Empleado.objects.all()
 
@@ -230,16 +239,17 @@ def registrarEmpleado(request):
             empleados = empleados.filter(
                 Q(nombre__icontains=buscar) |
                 Q(idEmpleado__icontains=buscar)).distinct()
-
-    if request.method == 'POST':
-        form = EmpladoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Registro Exitoso!')
-            return redirect('registroEmpleado')
+        else:
+            # Procesar el formulario de registro
+            registro_form = EmpleadoForm(request.POST)
+            if registro_form.is_valid():
+                registro_form.save()
+                messages.success(request, 'Registro Exitoso!')
+                return redirect('registroEmpleado')
 
     context = {
-        'form': form,
+        'buscar_form': buscar_form,
+        'registro_form': registro_form,
         'empleados': empleados,
         'departamentos': departamentos
     }
@@ -248,10 +258,10 @@ def registrarEmpleado(request):
 
 def actualizarEmpleado(request, codigo):
     empleados = get_object_or_404(Empleado, idEmpleado=codigo)
-    form = EmpladoForm(instance=empleados)
+    form = EmpleadoForm(instance=empleados)
 
     if request.method == 'POST':
-        form = EmpladoForm(request.POST, instance=empleados)
+        form = EmpleadoForm(request.POST, instance=empleados)
         if form.is_valid():
             form.save()
             messages.success(request, 'Empleado actualizado exitosamente!')
@@ -264,13 +274,13 @@ def edicionEmpleado(request, codigo):
     empleados = get_object_or_404(Empleado, idEmpleado=codigo)
 
     if request.method == 'POST':
-        form = EmpladoForm(request.POST, instance=empleados)
+        form = EmpleadoForm(request.POST, instance=empleados)
         if form.is_valid():
             form.save()
             messages.success(request, 'Empleado actualizado exitosamente!')
             return redirect('registroEmpleado')
     else:
-        form = EmpladoForm(instance=empleados)
+        form = EmpleadoForm(instance=empleados)
 
     return render(request, 'actualizarEmpleado.html', {'form': form, 'empleados': empleados})
 
@@ -477,36 +487,42 @@ def eliminarEntradaAlmacen(request, codigo):
 def registrarPedido(request):
     form = PedidoForm()
     pedidos = Pedido.objects.all()
+    response_data = {}  # Datos de respuesta para JSON
 
     if request.method == 'POST':
         form = PedidoForm(request.POST)
         if form.is_valid():
-            id_empleado = form.cleaned_data['idEmpleado']
-            if not Empleado.objects.filter(idEmpleado=id_empleado).exists():
-                messages.error(request, 'El número de empleado no existe.')
-            else:
+            try:
                 form.save()
-                messages.success(request, 'Registro Exitoso!')
-                return redirect('registrar_Pedido')
+                response_data['success'] = True
+                response_data['message'] = 'Registro Exitoso!'
+            except ValidationError as e:
+                response_data['success'] = False
+                response_data['message'] = str(e)
         else:
-            # Agregar mensajes de error del formulario al contexto, excepto para los campos obligatorios
-            for field, errors in form.errors.items():
-                if field not in ['nombreFksu', 'Fksku', 'fechaPedido', 'cantidad']:
-                    for error in errors:
-                        messages.error(request, f"{field}: {error}")
+            errors = []
+            for field, error_list in form.errors.items():
+                for error in error_list:
+                    errors.append(f"{field}: {error}")
+            response_data['success'] = False
+            response_data['errors'] = errors
 
-    codigo_barras = request.POST.get('codigoBarras')
-    if codigo_barras:
-        try:
-            producto = Producto.objects.get(codigoBarras=codigo_barras)
-            form = PedidoForm(initial={
-                'codigoBarras': codigo_barras,
-                'nombreFksu': producto.nombre,
-                'Fksku': producto.sku
-            })
-        except Producto.DoesNotExist:
-            form = PedidoForm()
-            messages.error(request, 'El producto no existe.')
+        return JsonResponse(response_data)
+
+    if request.method == 'GET':
+        codigo_barras = request.GET.get('codigoBarras')
+        if codigo_barras:
+            try:
+                producto = Producto.objects.get(codigoBarras=codigo_barras)
+                form = PedidoForm(initial={
+                    'codigoBarras': codigo_barras,
+                    'nombreFksu': producto.nombre,
+                    'Fksku': producto.sku
+                })
+            except Producto.DoesNotExist:
+                form = PedidoForm()
+                response_data['success'] = False
+                response_data['message'] = 'El producto no existe.'
 
     return render(request, 'registroPedido.html', {'form': form, 'pedidos': pedidos})
 
@@ -877,3 +893,31 @@ def graficoIngreso(request):
 
     context = {'meses': meses, 'valores_ingresos_json': valores_ingresos_json}
     return render(request, "graficoIngreso.html", context)
+
+
+def graficoPastelp(request):
+    departamentos = Departamento.objects.all()
+    gastos_por_departamento = []
+
+    for departamento in departamentos:
+        # Filtrar pedidos por departamento
+        pedidos_departamento = Pedido.objects.filter(
+            idEmpleado__fkdepartamento=departamento
+        )
+
+        # Calcular el gasto total del departamento
+        total_gasto = sum(float(pedido.cantidad * pedido.Fksku.precio)
+                          for pedido in pedidos_departamento)
+
+        # Agregar el departamento y el gasto a la lista
+        gastos_por_departamento.append((departamento.nombre, total_gasto))
+
+    # Obtener las listas separadas de departamentos y gastos totales
+    nombres_departamentos = [
+        departamento for departamento, _ in gastos_por_departamento]
+    gastos_departamentos = [gasto for _, gasto in gastos_por_departamento]
+    gastos_departamentos_json = json.dumps(gastos_departamentos)
+
+    context = {'nombres_departamentos': nombres_departamentos,
+               'gastos_departamentos_json': gastos_departamentos_json}
+    return render(request, "graficoPastelp.html", context)

@@ -3,6 +3,7 @@ from django import forms
 from django.utils.translation import activate, get_language
 from .models import Producto, Proveedor, Departamento, Empleado, Almacen, EntradaAlmacen, Pedido
 from datetime import date
+from django import forms
 
 
 class ProveedorForm(forms.ModelForm):
@@ -42,7 +43,7 @@ class ProductoForm(forms.ModelForm):
         self.fields['fkproveedor'].label_from_instance = lambda obj: obj.nombre
 
 
-class EmpladoForm(forms.ModelForm):
+class EmpleadoForm(forms.ModelForm):
     class Meta:
         model = Empleado
         fields = ['idEmpleado', 'nombre', 'apellidos', 'fkdepartamento']
@@ -148,3 +149,15 @@ class PedidoForm(forms.ModelForm):
         self.fields['Fksku'].label = 'Fksku'
         self.fields['Fksku'].widget.attrs['class'] = 'form-control'
         self.fields['fechaPedido'].initial = date.today()
+
+
+class BuscarForm(forms.Form):
+    buscar = forms.CharField(label='Buscar', required=False, max_length=100)
+
+
+class BuscarProveedoresForm(forms.Form):
+    buscar = forms.CharField(label='Buscar', required=False, max_length=100)
+
+
+class BuscarProductosForm(forms.Form):
+    buscar = forms.CharField(label='Buscar', required=False, max_length=100)

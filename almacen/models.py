@@ -73,7 +73,6 @@ class EntradaAlmacen(models.Model):
 
         # Actualizar la cantidad en Almacen
         almacen = Almacen.objects.get(Fksku=self.Fksku)
-        # Convertir self.cantidad a entero utilizando int()
         almacen.cantidad += int(self.cantidad)
         almacen.save()
 
@@ -89,17 +88,27 @@ class Pedido(models.Model):
     def valorTotal(self):
         return self.cantidad * self.Fksku.precio
 
-    def __str__(self):
+    def _str_(self):
         return str(self.idPedido)
 
     def save(self, *args, **kwargs):
         # Verificar si la cantidad en Almacen es suficiente
-        almacen = Almacen.objects.get(Fksku=self.Fksku)
-        if int(self.cantidad) > almacen.cantidad:
-            raise ValidationError("No hay suficiente cantidad del producto.")
+        almacenes = Almacen.objects.filter(Fksku=self.Fksku)
+        if almacenes.exists():
+            almacen = almacenes.first()
+            if int(self.cantidad) > almacen.cantidad:
+                raise ValidationError(
+                    "No hay suficiente cantidad del producto :)")
 
-        super(Pedido, self).save(*args, **kwargs)
+            super(Pedido, self).save(*args, **kwargs)
 
-        # Actualizar la cantidad en Almacen
-        almacen.cantidad -= int(self.cantidad)
-        almacen.save()
+            almacen.cantidad -= int(self.cantidad)
+            if almacen.cantidad < 0:
+                almacen.cantidad = 0
+                almacen.save()
+                raise ValidationError("No quedan productos disponibles.")
+            else:
+                almacen.save()
+        else:
+            raise ValidationError(
+                "No se encontró el objeto Almacen asociado al producto.")
